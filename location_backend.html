@@ -1,0 +1,200 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>餐饮后台定位录入</title>
+  <link href="http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+  <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=47FQtS6XkphGqmZ5nSEj6WTSTwE8SGaT"></script>
+</head>
+<body>
+<div class="container">
+  <div class="row col-md-6">
+    <form id="shop_form">
+      <div class="form-group">
+        <label for="shopInput">店名:</label>
+        <input type="text" class="form-control"
+        id="shopInput" placeholder="请输入店名">
+      </div>
+      <div class="form-group">
+        <label for="addressInput">地址:</label>
+        <input type="text" class="form-control"
+        id="addressInput" placeholder="请输入店面地址">
+      </div>
+      <button type="submit" class="btn btn-default">提交</button>
+    </form>
+  </div>
+  <div class="row"></div>
+  <div class="row">
+    <div class="col-md-3">
+      <ul class="shop-list">
+        <li class="shop-item">
+          <a href="javascript:;"
+          data-latitude="28.723515"
+          data-longitude="115.836016">范家农庄</a>
+
+        </li>
+        <li class="shop-item">
+          <a href="javascript:;"
+          data-latitude="28.697986"
+          data-longitude="115.855711">万达</a>
+        </li>
+      </ul>
+    </div>
+    <div id="map" class="col-md-8 col-md-offset-1"></div>
+  </div>
+</div>
+<style>
+  #map {
+    height: 500px;
+  }
+</style>
+  transition-timing-function:cubic-bezier(.1, 2.7, .58, 1);
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>餐饮后台定位录入</title>
+  <link href="http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+  <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=47FQtS6XkphGqmZ5nSEj6WTSTwE8SGaT"></script>
+</head>
+<body>
+<div class="container">
+  <div class="row col-md-6">
+    <form id="shop_form">
+      <div class="form-group">
+        <label for="shopInput">店名:</label>
+        <input type="text" class="form-control"
+        id="shopInput" placeholder="请输入店名">
+      </div>
+      <div class="form-group">
+        <label for="addressInput">地址:</label>
+        <input type="text" class="form-control"
+        id="addressInput" placeholder="请输入店面地址">
+      </div>
+      <button type="submit" class="btn btn-default">提交<tton>
+    </form>
+  </div>
+  <div class="row"></div>
+  <div class="row">
+    <div class="col-md-3">
+      <ul class="shop-list">
+        <li class="shop-item">
+          <a href="javascript:;"
+          data-latitude="28.723515"
+          data-longitude="115.836016">范家农庄</a>
+        </li>
+        <li class="shop-item">
+          <a href="javascript:;"
+          data-latitude="28.697986"
+          data-longitude="115.855711">万达</a>
+        </li></ul>
+    </div>
+    <div id="map" class="col-md-8 col-md-offset-1"></div>
+  </div>
+</div>
+<style>
+  #map {
+    height: 500px;
+  }
+</style>
+<script>
+var map = new BMap.Map('map');
+var point = new BMap.Point(115.833051,28.726072);
+map.centerAndZoom(point, 15);
+map.addControl(new BMap.MapTypeControl());
+map.enableScrollWheelZoom(true);
+// 监听a 的点击事件
+// 获得元素上的坐标
+// 将坐标添加到地图上，并以他为中心还会抖动。
+document.querySelectorAll('.shop-item a').forEach(shop =>{
+   shop.addEventListener('click',() => {
+      map.clearOverlays();
+      const latitude=shop.dataset.latitude;
+      const longitude=shop.dataset.longitude;
+      var point =  new BMap.Point(longitude,latitude);
+      map.centerAndZoom(point,17);
+      var marker = new BMap.Marker(point);
+      map.addOverlay(marker);
+      marker.setAnimation(BMAP_ANIMATION_BOUNCE);
+
+      var opts = {
+       position : point,    // 指定文本标注所在的地理位置
+       offset   : new BMap.Size(-60, -60)    //设置文本偏移量
+       }
+     var label = new BMap.Label(point.lat+" "+point.lng, opts);  // 创建文本标注对象
+     label.setStyle({
+     color : "black",
+     fontSize : "12px",
+     border:"0",
+     backgroundColor:null,
+     lineHeight : "20px",
+     fontFamily:"微软雅黑"
+     });
+     map.addOverlay(label);
+    });
+})
+
+document.getElementById('shop_form').addEventListener('submit',(event) => {
+   event.preventDefault();  //阻止默认行为
+  const shopName=document.getElementById('shopInput').value;
+  const shopAddress=document.getElementById('addressInput').value;
+  if(shopName && shopAddress)
+  {
+	var myGeo = new BMap.Geocoder();
+	// 将地址解析结果显示在地图上,并调整地图视野
+	myGeo.getPoint(shopAddress, function(point){
+		if (point) {
+			map.centerAndZoom(point, 16);
+      var marker = new BMap.Marker(point);
+      map.addOverlay(marker);
+      marker.setAnimation(BMAP_ANIMATION_BOUNCE);
+      var ul=document.querySelector('.shop-list');
+      var li=ul.lastChild;
+      var cln=li.cloneNode(true);
+      var clna=cln.querySelector("a");
+      clna.innerHTML=shopName;
+      clna.setAttribute("data-latitude",point.lat);
+      clna.setAttribute("data-longitude",point.lng);
+      ul.appendChild(cln);
+      document.querySelectorAll('.shop-item a').forEach(shop =>{
+             shop.addEventListener('click',() => {
+                const latitude=shop.dataset.latitude;
+                const longitude=shop.dataset.longitude;
+                var point =  new BMap.Point(longitude,latitude);
+                map.centerAndZoom(point,17);
+                var marker = new BMap.Marker(point);
+                map.addOverlay(marker);
+                marker.setAnimation(BMAP_ANIMATION_BOUNCE);
+             });
+          })
+          var opts = {
+	          position : point,    // 指定文本标注所在的地理位置
+	          offset   : new BMap.Size(-60, -60)    //设置文本偏移量
+	         }
+	       var label = new BMap.Label(point.lat+" "+point.lng, opts);  // 创建文本标注对象
+		      label.setStyle({
+          color : "black",
+          fontSize : "12px",
+          border:"0",
+          backgroundColor:null,
+          lineHeight : "20px",
+          fontFamily:"微软雅黑"
+		     });
+	       map.addOverlay(label);
+		}
+    else{
+			alert("您选择地址没有解析到结果!");
+		    }
+	}, "南昌市");
+    // 将地址转成经纬度，经纬度在地图上标出来，ul 动态添加li。
+  }
+});
+
+// 百度地图API功能
+	//单击获取点击的经纬度
+</script>
+
+</body>
+</html>
